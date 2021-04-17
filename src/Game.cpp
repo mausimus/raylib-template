@@ -1,29 +1,53 @@
 #include "Game.h"
 
-int             framesCounter = 0;
-int             randValue;
+int framesCounter = 0;
+int x             = screenWidth / 2;
+int y             = screenHeight / 2;
 
-Animator animator("GiveItAName", 5, 5, 5);
+Animator  animator("Test", 2, 1, 5);
+Texture2D cloudsTexture;
+Texture2D spriteTexture;
+Font      font;
 
-Game::Game(){
-        randValue = GetRandomValue(-8, 5);
+Game::Game() { }
+
+void Game::Start()
+{
+    cloudsTexture = LoadTexture("resources/clouds.png");
+    spriteTexture = LoadTexture("resources/sprite.png");
+    font          = LoadFontEx("resources/test1.ttf", 6, 0, 0);
+    animator.AssignSprite(spriteTexture);
 }
 
-void Game::Tick() {
-    std::string fdsfds("Fds");
-    std::vector<int> vek(5);
-    framesCounter++;
+void Game::End()
+{
+    UnloadTexture(cloudsTexture);
+    UnloadTexture(spriteTexture);
+    UnloadFont(font);
+}
 
-    if(((framesCounter / 120) % 2) == 1)
-    {
-        randValue     = GetRandomValue(-8, 5);
-        framesCounter = 0;
-    }
+void Game::Tick()
+{
+    framesCounter++;
+    int vx = 0;
+    int vy = 0;
+    if(IsKeyDown(KEY_UP))
+        vy--;
+    if(IsKeyDown(KEY_DOWN))
+        vy++;
+    if(IsKeyDown(KEY_LEFT))
+        vx--;
+    if(IsKeyDown(KEY_RIGHT))
+        vx++;
+    x += vx;
+    y += vy;
+
+    animator.Play();
 }
 
 void Game::Draw()
 {
-    ClearBackground(RAYWHITE);
-    DrawText("Every 2 seconds a new random value is generated:", 40, 30, 10, MAROON);
-    DrawText(FormatText("%i", randValue), 120, 60, 25, LIGHTGRAY);
+    DrawTexture(cloudsTexture, 0, 0, WHITE);
+    DrawTextureRec(animator.GetSprite(), animator.GetFrameRec(), (Vector2) {x, y}, WHITE);
+    DrawTextEx(font, "ABIACBIIAIB", (Vector2) {5, 5}, (float)font.baseSize, 1.0f, WHITE);
 }

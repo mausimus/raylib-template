@@ -11,15 +11,19 @@
 #define GLSL_VERSION 100
 #endif
 
-constexpr int   screenWidth  = 320;
-constexpr int   screenHeight = 240;
-constexpr int   initialScale = 3;
-bool            firstFrame   = true;
+#ifdef SCANLINES
+#define SHADER_PATH "resources/shaders/glsl%i/scanlines.fs"
+#else
+#define SHADER_PATH "resources/shaders/glsl%i/base.fs"
+#endif
+
+bool            firstFrame = true;
 Shader          shader;
 RenderTexture2D target;
 Rectangle       textureRect {0, 0, screenWidth, -screenHeight};
 Rectangle       renderRect {0, 0, 0, 0};
 Game            game;
+Vector2         topLeft{0,0};
 
 void UpdateDrawFrame(void);
 
@@ -47,12 +51,13 @@ void UpdateRenderSize(Rectangle& renderRect)
 int main()
 {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-    InitWindow(screenWidth * initialScale, screenHeight * initialScale, "game");
+    InitWindow(screenWidth * initialScale, screenHeight * initialScale, WINDOW_TITLE);
     SetWindowMinSize(screenWidth, screenHeight);
-    shader = LoadShader(0, TextFormat("resources/shaders/glsl%i/base.fs", GLSL_VERSION));
+    shader = LoadShader(0, TextFormat(SHADER_PATH, GLSL_VERSION));
     target = LoadRenderTexture(screenWidth, screenHeight);
-    SetTextureFilter(target.texture, FILTER_POINT);
+    SetTextureFilter(target.texture, TEXTURE_FILTER);
     UpdateRenderSize(renderRect);
+    game.Start();
 
 #if defined(PLATFORM_WEB)
     emscripten_set_main_loop(UpdateDrawFrame, 0, 1);
@@ -64,6 +69,7 @@ int main()
     }
 #endif
 
+    game.End();
     UnloadRenderTexture(target);
     CloseWindow();
 
@@ -72,11 +78,13 @@ int main()
 
 void UpdateDrawFrame()
 {
-    if(IsKeyPressed(KEY_F))
+#ifdef FULLSCREEN_KEY
+    if(IsKeyPressed(FULLSCREEN_KEY))
     {
         ToggleFullscreen();
         UpdateRenderSize(renderRect);
     }
+#endif
 
     game.Tick();
 
@@ -96,11 +104,10 @@ void UpdateDrawFrame()
         if(windowResized || firstFrame)
         {
             ClearBackground(BLACK);
+            firstFrame = false;
         }
-        DrawTexturePro(target.texture, textureRect, renderRect, (Vector2) {0, 0}, 0, WHITE);
+        DrawTexturePro(target.texture, textureRect, renderRect, topLeft, 0, WHITE);
         EndShaderMode();
     }
     EndDrawing();
-
-    firstFrame = false;
 }
