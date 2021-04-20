@@ -48,6 +48,6 @@ void Game::Tick()
 void Game::Draw()
 {
     DrawTexture(cloudsTexture, 0, 0, WHITE);
-    DrawTextureRec(animator.GetSprite(), animator.GetFrameRec(), (Vector2) {x, y}, WHITE);
+    DrawTextureRec(animator.GetSprite(), animator.GetFrameRec(), (Vector2) {static_cast<float>(x), static_cast<float>(y)}, WHITE);
     DrawTextEx(font, "ABIACBIIAIB", (Vector2) {5, 5}, (float)font.baseSize, 1.0f, WHITE);
 }

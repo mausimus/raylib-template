@@ -16,7 +16,7 @@ out vec4 finalColor;
 // NOTE: Render size values must be passed from code
 const float renderWidth = 320;
 const float renderHeight = 240;
-float offset = 0.0;
+float offset = 0;
 
 uniform float time;
 
@@ -45,5 +45,5 @@ void main()
     // Texel color fetching from texture sampler
     vec4 texelColor = texture(texture0, fragTexCoord);
 
-    finalColor = mix(vec4(0.0, 0.0, 0.0, 0.0), texelColor, wavePos + 0.1);
+    finalColor = mix(vec4(0.0, 0.0, 0.0, 0.0), texelColor, wavePos * wavePos + 0.4);
 }
