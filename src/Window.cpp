@@ -29,34 +29,40 @@ void UpdateDrawFrame(void);
 
 void UpdateRenderSize(Rectangle& renderRect)
 {
-    auto screenWidth  = GetScreenWidth();
-    auto screenHeight = GetScreenHeight();
-    renderRect.width  = screenWidth;
-    renderRect.height = screenHeight;
+    auto viewportWidth  = GetScreenWidth();
+    auto viewportHeight = GetScreenHeight();
+    renderRect.width  = viewportWidth;
+    renderRect.height = viewportHeight;
+    auto scale = screenWidth / static_cast<float>(GetScreenWidth());    
     if(renderRect.width * 3 != renderRect.height * 4)
     {
         if(renderRect.width * 3 > renderRect.height * 4)
         {
             renderRect.width = (renderRect.height * 4) / 3;
+            scale = screenHeight / static_cast<float>(GetScreenHeight());
         }
         else
         {
             renderRect.height = (renderRect.width * 3) / 4;
         }
     }
-    renderRect.x = (screenWidth - renderRect.width) / 2;
-    renderRect.y = (screenHeight - renderRect.height) / 2;
+    renderRect.x = (viewportWidth - renderRect.width) / 2;
+    renderRect.y = (viewportHeight - renderRect.height) / 2;
+    SetMouseScale(scale, scale);
+    SetMouseOffset(-renderRect.x, -renderRect.y);
 }
 
 int main()
 {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(screenWidth * initialScale, screenHeight * initialScale, WINDOW_TITLE);
+    InitAudioDevice();
     SetWindowMinSize(screenWidth, screenHeight);
     shader = LoadShader(0, TextFormat(SHADER_PATH, GLSL_VERSION));
     target = LoadRenderTexture(screenWidth, screenHeight);
     SetTextureFilter(target.texture, TEXTURE_FILTER);
     UpdateRenderSize(renderRect);
+    HideCursor();
     game.Start();
 
 #if defined(PLATFORM_WEB)
@@ -71,6 +77,7 @@ int main()
 
     game.End();
     UnloadRenderTexture(target);
+    CloseAudioDevice();
     CloseWindow();
 
     return 0;
