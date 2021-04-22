@@ -23,7 +23,14 @@ RenderTexture2D target;
 Rectangle       textureRect {0, 0, screenWidth, -screenHeight};
 Rectangle       renderRect {0, 0, 0, 0};
 Game            game;
-Vector2         topLeft{0,0};
+Vector2         topLeft {0, 0};
+double          totalTime;
+
+#ifdef DRAW_PIXELS
+Color     framebuffer[screenWidth * screenHeight];
+Rectangle bufferRect;
+bool      fullFrame;
+#endif
 
 void UpdateDrawFrame(void);
 
@@ -31,15 +38,15 @@ void UpdateRenderSize(Rectangle& renderRect)
 {
     auto viewportWidth  = GetScreenWidth();
     auto viewportHeight = GetScreenHeight();
-    renderRect.width  = viewportWidth;
-    renderRect.height = viewportHeight;
-    auto scale = screenWidth / static_cast<float>(GetScreenWidth());    
+    renderRect.width    = viewportWidth;
+    renderRect.height   = viewportHeight;
+    auto scale          = screenWidth / static_cast<float>(GetScreenWidth());
     if(renderRect.width * 3 != renderRect.height * 4)
     {
         if(renderRect.width * 3 > renderRect.height * 4)
         {
             renderRect.width = (renderRect.height * 4) / 3;
-            scale = screenHeight / static_cast<float>(GetScreenHeight());
+            scale            = screenHeight / static_cast<float>(GetScreenHeight());
         }
         else
         {
@@ -62,13 +69,18 @@ int main()
     target = LoadRenderTexture(screenWidth, screenHeight);
     SetTextureFilter(target.texture, TEXTURE_FILTER);
     UpdateRenderSize(renderRect);
+#ifdef DRAW_PIXELS
+    for(int q = 0; q < screenWidth * screenHeight; q++)
+        framebuffer[q] = BLACK;
+#endif
     HideCursor();
     game.Start();
+    totalTime = GetTime();
 
 #if defined(PLATFORM_WEB)
-    emscripten_set_main_loop(UpdateDrawFrame, 0, 1);
+    emscripten_set_main_loop(UpdateDrawFrame, TARGET_FPS, 1);
 #else
-    SetTargetFPS(60);
+    SetTargetFPS(TARGET_FPS);
     while(!WindowShouldClose())
     {
         UpdateDrawFrame();
@@ -93,7 +105,9 @@ void UpdateDrawFrame()
     }
 #endif
 
-    game.Tick();
+    auto currentTime = GetTime();
+    game.Tick(currentTime - totalTime, currentTime);
+    totalTime = currentTime;
 
     BeginDrawing();
     {
@@ -103,9 +117,19 @@ void UpdateDrawFrame()
             UpdateRenderSize(renderRect);
         }
 
+#ifdef DRAW_PIXELS
+        game.DrawPixels(framebuffer, &bufferRect, &fullFrame);
+        if(fullFrame)
+            UpdateTexture(target.texture, framebuffer);
+        else
+            UpdateTextureRec(target.texture, bufferRect, framebuffer);
+#endif
+
+#ifdef DRAW_SHAPES
         BeginTextureMode(target);
-        game.Draw();
+        game.DrawShapes();
         EndTextureMode();
+#endif
 
         BeginShaderMode(shader);
         if(windowResized || firstFrame)

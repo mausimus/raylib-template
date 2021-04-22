@@ -19,7 +19,7 @@ void Game::Start()
     cloudsTexture = LoadTexture("resources/clouds.png");
     spriteTexture = LoadTexture("resources/sprite.png");
     font          = LoadFontEx("resources/test1.ttf", 6, 0, 0);
-    fxOgg         = LoadSound("resources/sound.ogg"); // Load OGG audio file
+    fxOgg         = LoadSound("resources/sound.ogg");
     animator.AssignSprite(spriteTexture);
 }
 
@@ -30,7 +30,7 @@ void Game::End()
     UnloadFont(font);
 }
 
-void Game::Tick()
+void Game::Tick(double deltaTime, double totalTime)
 {
     framesCounter++;
     int vx = 0;
@@ -60,9 +60,21 @@ void Game::Tick()
     animator.Play();
 }
 
-void Game::Draw()
+int _x = 0;
+
+void Game::DrawPixels(Color *framebuffer, Rectangle *rect, bool* fullFrame)
 {
-    DrawTexture(cloudsTexture, 0, 0, WHITE);
+    *fullFrame = false;
+    rect->y = 190.0f;
+    rect->height = 50.0f;
+    rect->x = 0.0f;
+    rect->width = screenWidth;
+    framebuffer[_x++] = GREEN;
+}
+
+void Game::DrawShapes()
+{
+    //DrawTexture(cloudsTexture, 0, 0, WHITE);
     DrawTextureRec(animator.GetSprite(), animator.GetFrameRec(), (Vector2) {static_cast<float>(x), static_cast<float>(y)}, WHITE);
     DrawCircle(mx, my, 5, MAROON);
     DrawTextEx(font, "ABIACBIIAIB", (Vector2) {5, 5}, (float)font.baseSize, 1.0f, WHITE);
