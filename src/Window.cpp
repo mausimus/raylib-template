@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Game.h"
+#include "TestGame.h"
 
 #if defined(PLATFORM_WEB)
 #include <emscripten/emscripten.h>
@@ -22,7 +22,7 @@ Shader          shader;
 RenderTexture2D target;
 Rectangle       textureRect {0, 0, screenWidth, -screenHeight};
 Rectangle       renderRect {0, 0, 0, 0};
-Game            game;
+TestGame        game;
 Vector2         topLeft {0, 0};
 double          totalTime;
 
@@ -41,16 +41,16 @@ void UpdateRenderSize(Rectangle& renderRect)
     renderRect.width    = viewportWidth;
     renderRect.height   = viewportHeight;
     auto scale          = screenWidth / static_cast<float>(GetScreenWidth());
-    if(renderRect.width * 3 != renderRect.height * 4)
+    if(renderRect.width * aspectV != renderRect.height * aspectH)
     {
-        if(renderRect.width * 3 > renderRect.height * 4)
+        if(renderRect.width * aspectV > renderRect.height * aspectH)
         {
-            renderRect.width = (renderRect.height * 4) / 3;
+            renderRect.width = (renderRect.height * aspectH) / aspectV;
             scale            = screenHeight / static_cast<float>(GetScreenHeight());
         }
         else
         {
-            renderRect.height = (renderRect.width * 3) / 4;
+            renderRect.height = (renderRect.width * aspectV) / aspectH;
         }
     }
     renderRect.x = (viewportWidth - renderRect.width) / 2;
@@ -70,7 +70,7 @@ int main()
     SetTextureFilter(target.texture, TEXTURE_FILTER);
     UpdateRenderSize(renderRect);
 #ifdef DRAW_PIXELS
-    for(int q = 0; q < screenWidth * screenHeight; q++)
+    for(int q = 0; q < screenSize; q++)
         framebuffer[q] = BLACK;
 #endif
     HideCursor();
@@ -116,6 +116,12 @@ void UpdateDrawFrame()
         {
             UpdateRenderSize(renderRect);
         }
+
+#ifdef DRAW_BACKGROUND
+        BeginTextureMode(target);
+        game.DrawBackground();
+        EndTextureMode();
+#endif
 
 #ifdef DRAW_PIXELS
         game.DrawPixels(framebuffer, &bufferRect, &fullFrame);
