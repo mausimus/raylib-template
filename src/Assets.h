@@ -6,6 +6,7 @@ class Assets
 {
 public:
     Texture2D spriteTexture;
+    Color palette[64];
 
     Assets();
     void Load();

@@ -81,5 +81,6 @@ void TestScreen::DrawPixels(Color *framebuffer, Rectangle *rect, bool* fullFrame
 void TestScreen::DrawShapes()
 {
     DrawTextureRec(animator.GetSprite(), animator.GetFrameRec(), (Vector2) {static_cast<float>(x), static_cast<float>(y)}, WHITE);
-    DrawTextEx(font, "Score SCORE 134234", (Vector2) {5, 5}, (float)font.baseSize, 1.0f, WHITE);
+    auto col = Assets()->palette[62];
+    DrawTextEx(font, "Score SCORE 134234", (Vector2) {5, 5}, (float)font.baseSize, 1.0f, Assets()->palette[63]);
 }
